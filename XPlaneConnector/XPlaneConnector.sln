@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPlaneConnector.Tests", "XP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPlaneDiscovery", "XPlaneDiscovery\XPlaneDiscovery.csproj", "{A119C624-AEE3-4EF5-B747-354B28C4CD14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPlaneCommandLineStart", "XPlaneCommandLineStart\XPlaneCommandLineStart.csproj", "{347A9245-5212-4ADC-A87F-E7D8D280FF64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{A119C624-AEE3-4EF5-B747-354B28C4CD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A119C624-AEE3-4EF5-B747-354B28C4CD14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A119C624-AEE3-4EF5-B747-354B28C4CD14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{347A9245-5212-4ADC-A87F-E7D8D280FF64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{347A9245-5212-4ADC-A87F-E7D8D280FF64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{347A9245-5212-4ADC-A87F-E7D8D280FF64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{347A9245-5212-4ADC-A87F-E7D8D280FF64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

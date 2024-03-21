@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\XPlaneConnector\XPlaneConnector.csproj" />
     <ProjectReference Include="..\XPlaneDiscovery\XPlaneDiscovery.csproj" />
+    <ProjectReference Include="..\XPlaneCommandLineStart\XPlaneCommandLineStart.csproj" />
   </ItemGroup>
 
 </Project>
