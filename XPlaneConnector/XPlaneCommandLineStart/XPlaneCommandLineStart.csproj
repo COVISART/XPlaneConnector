@@ -7,7 +7,8 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\XPlaneConnector\XPlaneConnector.csproj" />
-    <ProjectReference Include="..\XPlaneDiscovery\XPlaneDiscovery.csproj" />
+    <ProjectReference Include="../XPlaneConnector/XPlaneConnector.csproj" />
+    <ProjectReference Include="../XPlaneDiscovery/XPlaneDiscovery.csproj" />
+    <ProjectReference Include="../XPlaneConnector.DataRefs/XPlaneConnector.DataRefs.csproj" />
   </ItemGroup>
 </Project>

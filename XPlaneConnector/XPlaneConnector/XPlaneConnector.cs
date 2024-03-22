@@ -41,7 +41,8 @@ namespace XPlaneConnector
         {
             get
             {
-                return ((IPEndPoint)client.Client.LocalEndPoint);
+                return (IPEndPoint)server.Client.LocalEndPoint;
+                //return ((IPEndPoint)client.Client.LocalEndPoint);
             }
         }
 
@@ -61,8 +62,8 @@ namespace XPlaneConnector
         /// </summary>
         public void Start()
         {
-            client = new UdpClient();
-            client.Connect(XPlaneEP.Address, XPlaneEP.Port);
+            // client = new UdpClient();
+            // client.Connect(XPlaneEP.Address, XPlaneEP.Port);
 
             server = new UdpClient(LocalEP);
 
@@ -219,24 +220,22 @@ namespace XPlaneConnector
         }
 
         /// <summary>
-        /// Subscribe to a DataRef, notification will be sent every time the value changes
+        /// String datarefs require a 'regular' subscription to each element of the string to be returned.  Once all the 
+        /// elements have been received and decoded into a string, then the onchange notification will be emitted.
         /// </summary>
         /// <param name="dataref">DataRef to subscribe to</param>
-        /// <param name="frequency">Times per seconds X-Plane will be seding this value</param>
-        /// <param name="onchange">Callback invoked every time a change in the value is detected</param>
+        /// <param name="frequency">Times per seconds X-Plane will be sending this value</param>
+        /// <param name="onchange">Callback invoked every time a change in the full string is detected</param>
         public void Subscribe(StringDataRefElement dataref, int frequency = -1, Action<StringDataRefElement, string> onchange = null)
         {
-            //if (onchange != null)
-            //    dataref.OnValueChange += (e, v) => { onchange(e, v); };
-
-            //Subscribe((DataRefElement)dataref, frequency);
-
             if (dataref == null)
                 throw new ArgumentNullException(nameof(dataref));
 
             dataref.OnValueChange += (e, v) => { onchange(e, v); };
 
-            for (var c = 0; c < dataref.StringLenght; c++)
+            // Create individual subscriptions for each character of a string.  Each character gets its own index when the new DataRefElement 
+            // is instantiated.
+            for (var c = 0; c < dataref.StringLength; c++)
             {
                 var arrayElementDataRef = new DataRefElement
                 {
@@ -247,21 +246,11 @@ namespace XPlaneConnector
                 var currentIndex = c;
                 Subscribe(arrayElementDataRef, frequency, (e, v) =>
                 {
-                    var character = Convert.ToChar(Convert.ToInt32(v));
-                    dataref.Update(currentIndex, character);
+                    dataref.Update(currentIndex, v);
                 });
             }
         }
 
-        /// <summary>
-        /// Deprecated, this method has no effect
-        /// </summary>
-        /// <param name="dataref"></param>
-        /// <param name="frequency"></param>
-        [Obsolete]
-        private void Subscribe(DataRefElement dataref, int frequency = -1)
-        {
-        }
 
         private void RequestDataRef(DataRefElement element)
         {
@@ -288,7 +277,7 @@ namespace XPlaneConnector
         {
             var dr_list = DataRefs.Where(d => d.DataRef == dataref).ToArray();
 
-            foreach(var dr in dr_list)
+            foreach (var dr in dr_list)
             {
                 var dg = new XPDatagram();
                 dg.Add("RREF");
