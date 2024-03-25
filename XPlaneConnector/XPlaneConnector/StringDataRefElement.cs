@@ -7,13 +7,13 @@ namespace XPlaneConnector
     public class StringDataRefElement
     {
         private static readonly object lockElement = new object();
-        private float[] _inProcessArray;
+        private float[] _inProcessArray = new float[0];
 
         /// <summary>
         /// The full dataref path
         /// <example>sim/cockpit2/radios/indicators/nav1_nav_id</example>
         /// </summary>
-        public string DataRef { get; set; }
+        public string? DataRef { get; set; }
 
         /// <summary>
         ///  Frequency at which XPlane will send the characters for the string
@@ -52,9 +52,7 @@ namespace XPlaneConnector
                 return CharactersProcessed >= StringLength;
             }
         }
-
-        public delegate void NotifyChangeHandler(StringDataRefElement sender, string newValue);
-        public event NotifyChangeHandler OnValueChange;
+        public event Action<StringDataRefElement,string>?  OnValueChange;
 
         /// <summary>
         /// When a new character is received, it will come with an index (into all the datarefs that have been created) and the character.  The Update
@@ -135,7 +133,7 @@ namespace XPlaneConnector
             Value = "";
         }
 
-        
+
         /// <summary>
         /// Create a String DataRefElement with parameters instead of a Dataref
         /// </summary>
@@ -150,7 +148,7 @@ namespace XPlaneConnector
                     throw new ArgumentException("datarefPath is null");
 
                 if (stringLength == 0)
-                    throw new ArgumentException("string legnth for the dataref value can not be zero");
+                    throw new ArgumentException("string length for the dataref value can not be zero");
 
                 CharactersProcessed = 0;
                 Value = "";

@@ -6,18 +6,15 @@ namespace XPlaneConnector
     {
         private static object lockElement = new object();
         private static int current_id = 0;
-
         public int Id { get; set; }
-        public string DataRef { get; set; }
-        public int Frequency { get; set; }
+        public string? DataRefPath { get; set; }
+        public int Frequency { get; set; } = 5;
         public bool IsInitialized { get; set; }
-        public DateTime LastUpdate { get; set; }
-        public string Units { get; set; }
-        public string Description { get; set; }
-        public float Value { get; set; }
-
-        public delegate void NotifyChangeHandler(DataRefElement sender, float newValue);
-        public event NotifyChangeHandler OnValueChange;
+        public DateTime LastUpdate { get; set; } = DateTime.MinValue;
+        public string? Units { get; set; }
+        public string? Description { get; set; }
+        public float Value { get; set; } = float.MinValue;
+        public event Action<DataRefElement, float>? OnValueChange;
 
         public DataRefElement()
         {
@@ -26,34 +23,33 @@ namespace XPlaneConnector
                 Id = ++current_id;
             }
             IsInitialized = false;
-            LastUpdate = DateTime.MinValue;
-            Value = float.MinValue;
         }
 
         public TimeSpan Age
         {
             get
             {
-                return DateTime.Now - LastUpdate;
+                return (DateTime.Now - LastUpdate);
             }
         }
 
-        public bool Update(int id, float value)
+        /// <summary>
+        /// Updates a single value.  In the case of a string dataref, this is one character,  If the value is numeric, it will be converted
+        /// from the float that is passed in
+        /// </summary>
+        /// <param name="id">unique id for this dataref for THIS SESSION with xplane</param>
+        /// <param name="value">A float value that can be converted into the appropriate numeric value or character</param>
+        /// <returns></returns>
+        public void Update(float value)
         {
-            if (id == Id)
+            LastUpdate = DateTime.Now;
+
+            if (value != Value)
             {
-                LastUpdate = DateTime.Now;
-
-                if (value != Value)
-                {
-                    Value = value;
-                    IsInitialized = true;
-                    OnValueChange?.Invoke(this, Value);
-                    return true;
-                }
+                Value = value;
+                IsInitialized = true;
+                OnValueChange?.Invoke(this, Value);
             }
-
-            return false;
         }
     }
 }
