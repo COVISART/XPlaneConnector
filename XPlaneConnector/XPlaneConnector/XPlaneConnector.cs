@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection.Metadata;
@@ -154,7 +155,7 @@ public class XPlaneConnector : IDisposable
             {
                 if (pair.Value != null)
                     if (pair.Value.DataRefPath != null)
-                        Unsubscribe(pair.Value.DataRefPath);
+                        Unsubscribe(pair.Value.DataRefPath, null);
             }
 
             // Create a list of all the nonNullTasks
@@ -201,7 +202,7 @@ public class XPlaneConnector : IDisposable
                     pos += BYTES_PER_INDEX_OR_FlOAT;
                     if (!DataRefs.ContainsKey(id))
                         throw new ArgumentException(String.Format("key {0} not found in Datarefs", id));
-    
+
                     DataRefs[id].Update(value);
                     OnDataRefReceived?.Invoke(DataRefs[id]);
                 }
@@ -261,62 +262,104 @@ public class XPlaneConnector : IDisposable
     /// <summary>
     /// Subscribe to a DataRef, notification will be sent every time the value changes
     /// </summary>
-    /// <param name="dataref">DataRef to subscribe to</param>
+    /// <param name="datarefElement">XplaneConnector.Datarefs.dataref to subscribe to.  Getting one of these predefined datarefs will return
+    /// a partially filled-in datarefElement</param>
     /// <param name="frequency">Times per seconds X-Plane will be sending this value</param>
     /// <param name="onchange">Callback invoked every time a change in the value is detected</param>
-    public void Subscribe(DataRefElement dataref, int frequency, Action<DataRefElement, float> onchange)
+    public void Subscribe(DataRefElement datarefElement, int frequency, Action<DataRefElement, float> onchange)
     {
-        if (dataref == null)
-            throw new ArgumentNullException(nameof(dataref));
+        Subscribe(datarefElement, frequency, characterPosition: null, onchange);
+    }
 
-        if (onchange != null)
-            dataref.OnValueChange += (e, v) => { onchange(e, v); };
 
-        if (frequency > 0)
-            dataref.Frequency = frequency;
+    /// <summary>
+    /// Subscribe to a DataRef, notification will be sent every time the value changes
+    /// </summary>
+    /// <param name="datarefElement">XplaneConnector.Datarefs.dataref to subscribe to.  Getting one of these predefined datarefs will return
+    /// a partially filled-in datarefElement</param>
+    /// <param name="frequency">Times per seconds X-Plane will be sending this value</param>
+    /// <param name="characterPosition">position for the character within the string</param>
+    /// <param name="onchange">Callback invoked every time a change in the value is detected</param>
+    public void Subscribe(DataRefElement datarefElement, int frequency, int? characterPosition, Action<DataRefElement, float> onchange)
+    {
+        try
+        {
+            if (datarefElement == null)
+                throw new ArgumentNullException(nameof(datarefElement));
 
-        // The index within the dataref will be used as the dictionary key as they both require a unique value
-        DataRefs[dataref.Id] = dataref;
+            if (onchange != null)
+                datarefElement.OnValueChange += (e, v) => { onchange(e, v); };
+
+            if (frequency > 0)
+                datarefElement.Frequency = frequency;
+
+            if (characterPosition.HasValue)
+                datarefElement.CharacterPosition = characterPosition;
+
+
+
+            // The index within the dataref will be used as the dictionary key as they both require a unique value
+            DataRefs[datarefElement.Id] = datarefElement;
+        }
+        catch (Exception ex)
+        {
+            Debug.Print(ex.ToString());
+            throw;
+        }
+
     }
 
     /// <summary>
-    /// String datarefs require a 'regular' subscription to each element of the string to be returned.  Once all the 
+    /// String datarefs will create a subscription to each dataref element that returns one character of the string.  Once all the 
     /// elements have been received and decoded into a string, then the onchange notification will be emitted.
     /// </summary>
-    /// <param name="dataref">DataRef to subscribe to</param>
+    /// <param name="stringDataRefElement">DataRef obtained from the XplaneConnector.Datarefs project </param>
     /// <param name="frequency">Times per seconds X-Plane will be sending this value</param>
     /// <param name="onchange">Callback invoked every time a change in the full string is detected</param>
-    public void Subscribe(StringDataRefElement dataref, int frequency, Action<StringDataRefElement, string> onchange)
+    public void Subscribe(StringDataRefElement stringDataRefElement, int frequency, Action<StringDataRefElement, string> onchange)
     {
-        if (dataref == null)
-            throw new ArgumentNullException(nameof(dataref));
-
-        dataref.OnValueChange += (e, v) => { onchange(e, v); };
-
-        // Create individual subscriptions for each character of a string.  Each character gets its own datarefElement and associated
-        // index when the new DataRefElement is added to the DataRefs List
-        for (var c = 0; c < dataref.StringLength; c++)
+        try
         {
-            var arrayElementDataRef = new DataRefElement
-            {
-                DataRefPath = $"{dataref.DataRef}[{c}]",
-                Description = ""
-            };
+            if (stringDataRefElement == null)
+                throw new ArgumentNullException(nameof(stringDataRefElement));
 
-            var currentIndex = c;
-            Subscribe(arrayElementDataRef, frequency, (e, v) =>
+            stringDataRefElement.OnValueChange += onchange;
+
+            // Create individual subscriptions for each character of a string.  Each character gets its own datarefElement and associated
+            // index when the new DataRefElement is added to the DataRefs List
+            for (var positionWithinString = 0; positionWithinString < stringDataRefElement.StringLength; positionWithinString++)
             {
-                dataref.Update(currentIndex, v);
-            });
+                var datarefElementWithArrayNotation = new DataRefElement
+                {
+                    DataRefPath = $"{stringDataRefElement.DataRefPath}[{positionWithinString}]",
+                    Description = ""
+                };
+
+                // when a new character comes in, dataref.Update will be called to assemble the string that is used for the value
+                Subscribe(datarefElementWithArrayNotation, frequency, positionWithinString, (e, v) =>
+                {
+                    if (e.CharacterPosition.HasValue)
+                        stringDataRefElement.Update((int)e.CharacterPosition, v);
+                    else
+                        throw new Exception("String Character does not have characterPosition in StringDataRefElement");
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.Print(ex.ToString());
+            throw;
         }
     }
+
+
 
 
     /// <summary>
     /// Send a request to the XPlane at the _XPlaneEP endpoint to begin broadcasting data for the specified dataref
     /// XPlane will respond by sending the data back to the IP and Port that sent the request
     /// </summary>
-    /// <param name="element"></param>
+    /// <param name="element">XplaneConnector.DatarefElement Type</param>
     private void RequestDataRef(DataRefElement element)
     {
         try
@@ -346,29 +389,65 @@ public class XPlaneConnector : IDisposable
     }
 
     /// <summary>
-    /// Informs X-Plane to stop sending this DataRef element
+    /// Unsubscribe from the requested DataRefElement that returns a string
     /// </summary>
-    /// <param name="datarefPath">Individual DataRef to unsubscribe to including the [index] if it is used</param>
-    public void Unsubscribe(string datarefPath)
+    /// <param name="stringDataRefElement">obtained from the XPlaneConnector.Datarefs project</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    public void Unsubscribe(StringDataRefElement stringDataRefElement, Action<StringDataRefElement, string> onchange)
+    {
+        if (stringDataRefElement == null)
+            throw new ArgumentNullException(nameof(stringDataRefElement));
+
+        // Unsubscribe from the OnValueChange event to stop receiving notifications when the string-value changes
+        stringDataRefElement.OnValueChange -= onchange;
+
+        // Create individual subscriptions for each character of a string.  Each character gets its own datarefElement and associated
+        // index when the new DataRefElement is added to the DataRefs List
+        for (var positionWithinString = 0; positionWithinString < stringDataRefElement.StringLength; positionWithinString++)
+        {
+            var dataRefPath = $"{stringDataRefElement.DataRefPath}[{positionWithinString}]";
+            Unsubscribe(dataRefPath, (e, v) =>
+            {
+                stringDataRefElement.Update(positionWithinString, v);
+            });
+        }
+    }
+
+    /// <summary>
+    /// Notifies X-Plane to stop sending this DataRef element
+    /// </summary>
+    /// <param name="datarefPath">Dataref-Path to unsubscribe to including the [index] if it is used</param>
+    public void Unsubscribe(string datarefPath, Action<DataRefElement, float>? onchange)
     {
         try
         {
             if (!DataRefs.Any(pair => pair.Value.DataRefPath == datarefPath))
                 throw new ArgumentException(String.Format("No element in DataRefs matching {0} was found", datarefPath));
 
+
             var key = DataRefs.First(pair => pair.Value.DataRefPath == datarefPath).Key;
 
-            var dataref = DataRefs[key];
+            var datarefElement = DataRefs[key];
+
 
             // prepare the datagram to inform XPlane that data for this dataref should no longer be sent
             var dg = new XPDatagram();
             dg.Add("RREF");
-            dg.Add(dataref.Id);
+            dg.Add(datarefElement.Id);
             dg.Add(0);
             dg.Add(datarefPath);
             dg.FillTo(413);
 
             _client?.Send(dg.Get(), dg.Len);
+
+            // Unsubscribe from the OnValueChange event to stop receiving notifications when the value changes
+            // if no individual subscription to the EventAction is provided, clear ALL the subscriptions
+            // if onchange doesn't exist in the internally maintained (and invisible) subscriptions list it is a no-op, 
+            // will not throw an
+            if (onchange == null)
+                DataRefs[key].ClearSubscriptions();
+            else
+                datarefElement.OnValueChange -= onchange;
 
             // Remove the dataref from the Dictionary
             DataRefs.Remove(key);
@@ -379,6 +458,7 @@ public class XPlaneConnector : IDisposable
             throw;
         }
     }
+
 
     /// <summary>
     /// Informs X-Plane to change the value of the DataRef

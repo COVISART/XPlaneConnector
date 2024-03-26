@@ -8,6 +8,10 @@ namespace XPlaneConnector
         private static int current_id = 0;
         public int Id { get; set; }
         public string? DataRefPath { get; set; }
+        /// <summary>
+        /// Character position within the string.  Assigned only to datarefs returning a string value
+        /// </summary>
+        public int? CharacterPosition { get; set; }
         public int Frequency { get; set; } = 5;
         public bool IsInitialized { get; set; }
         public DateTime LastUpdate { get; set; } = DateTime.MinValue;
@@ -23,6 +27,10 @@ namespace XPlaneConnector
                 Id = ++current_id;
             }
             IsInitialized = false;
+        }
+
+        public void ClearSubscriptions(){
+            OnValueChange = null;
         }
 
         public TimeSpan Age
