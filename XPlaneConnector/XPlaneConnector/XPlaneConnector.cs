@@ -199,6 +199,7 @@ public class XPlaneConnector : IDisposable
                     var id = BitConverter.ToInt32(buffer, pos);
                     pos += BYTES_PER_INDEX_OR_FlOAT;
                     var value = BitConverter.ToSingle(buffer, pos);
+                    //Debug.Print("[{0}]{1}", pos, (char)(int)(value));
                     pos += BYTES_PER_INDEX_OR_FlOAT;
                     if (!DataRefs.ContainsKey(id))
                         throw new ArgumentException(String.Format("key {0} not found in Datarefs", id));

@@ -106,7 +106,7 @@ namespace XPlaneConnector.DataRefs
             get
             {
                 return new StringDataRefElement
-                {
+                {                 
                     DataRefPath = "sim/aircraft/view/acf_tailnum",
                     StringLength = 40,
                     Frequency = DefaultFrequency

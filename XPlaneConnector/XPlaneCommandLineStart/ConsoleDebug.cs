@@ -16,6 +16,13 @@ namespace XPlaneCommandLineStart
         public static async Task RunAsync(string[] args)
         {
             var connector = new XPlaneConnector.XPlaneConnector(ip: "192.168.29.220", xplanePort: 49000); // Default IP 127.0.0.1 Port 49000
+
+            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.AircraftViewAcfTailnum, 1, (element, value) =>
+            {
+                Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}"); 
+            });
+            
+
             connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2RadiosIndicatorsNav1NavId, 1, (element, value) =>
             {
                 Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
@@ -28,11 +35,6 @@ namespace XPlaneCommandLineStart
                 Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {v}");
             });
 
-
-            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.AircraftViewAcfTailnum, 5, (element, value) =>
-            {
-                Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}"); 
-            });
 
             await connector.Start();
         }

@@ -55,7 +55,7 @@ namespace XPlaneConnector
                 return CharactersProcessed >= StringLength;
             }
         }
-        
+
         /// <summary>
         /// Clients can subscribe to this Action which will emit a signal when the entire string is updated 
         /// </summary>
@@ -83,11 +83,8 @@ namespace XPlaneConnector
                 }
 
                 // put the character into the array at the correct location and update the character counter
-                if (floatCharacter > 0)
-                {
-                    _inProcessArray[characterPosition] = floatCharacter;
-                    CharactersProcessed++;
-                }
+                _inProcessArray[characterPosition] = floatCharacter;
+                CharactersProcessed++;
 
                 // if all the characters have been processed, convert the array to a string and update the value
                 if (CharactersProcessed == StringLength)
