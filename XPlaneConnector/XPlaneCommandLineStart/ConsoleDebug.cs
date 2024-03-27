@@ -19,22 +19,32 @@ namespace XPlaneCommandLineStart
 
             connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.AircraftViewAcfTailnum, 1, (element, value) =>
             {
-                Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}"); 
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
             });
-            
+
 
             connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2RadiosIndicatorsNav1NavId, 1, (element, value) =>
             {
-                Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}" );
             });
 
             connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2GaugesIndicatorsCompassHeadingDegMag, 5, OnCompassHeadingMethod);
 
             connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.CockpitRadiosCom1FreqHz, 1, (e, v) =>
             {
-                Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {v}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {v}" );
             });
 
+
+
+            connector.Subscribe(
+                "sim/cockpit2/radios/indicators/gps_nav_id",
+                frequency: 5,
+                bufferSize: 150,
+                (element, value) =>
+                {
+                    Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}" );
+                });
 
             await connector.Start();
         }
@@ -45,11 +55,11 @@ namespace XPlaneCommandLineStart
         {
             try
             {
-                Debug.Print($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {val}");
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {val}");
             }
             catch (Exception ex)
             {
-                Debug.Print("Exception in OnCompassHeadingMethod: {0}", ex.ToString());
+                Console.WriteLine("Exception in OnCompassHeadingMethod: {0}\n", ex.ToString());
                 throw;
             }
         }

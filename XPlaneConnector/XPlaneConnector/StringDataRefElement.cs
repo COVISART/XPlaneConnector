@@ -21,9 +21,9 @@ namespace XPlaneConnector
         public int Frequency { get; set; }
 
         /// <summary>
-        /// The defined string length for the dataref value
+        /// The defined buffer size to contain the dataref value
         /// </summary>
-        public int StringLength { get; set; }
+        public int BufferSize { get; set; }
 
         /// <summary>
         /// The value that will be retained in this class once all characters have been received
@@ -38,23 +38,13 @@ namespace XPlaneConnector
         /// <summary>
         /// After a threshold, the string will be reset
         /// </summary>
-        private TimeSpan AgeThreshold = TimeSpan.FromSeconds(5);
+        private TimeSpan AgeThreshold = TimeSpan.FromSeconds(5000);
+
 
         /// <summary>
         /// The number of Characters that have been processed since it was determined that a new value is being transmitted
         /// </summary>
-        private int CharactersProcessed;
-
-        /// <summary>
-        /// Returns true once all the characters needed to complete the string have been received
-        /// </summary>
-        public bool IsStringFillingComplete
-        {
-            get
-            {
-                return CharactersProcessed >= StringLength;
-            }
-        }
+        private int _charactersProcessed;
 
         /// <summary>
         /// Clients can subscribe to this Action which will emit a signal when the entire string is updated 
@@ -75,8 +65,8 @@ namespace XPlaneConnector
                 // reset character counter
                 if ((DateTime.Now - LastUpdateTime) > AgeThreshold)
                 {
-                    CharactersProcessed = 0;
-                    _inProcessArray = new float[StringLength];
+                    _charactersProcessed = 0;
+                    _inProcessArray = new float[BufferSize];
                     // The last UpdateTime will be updated when starting to fill the array and when filling is completed
                     // that way if it is only partially filled by the time it has aged-out, it will be reset
                     LastUpdateTime = DateTime.Now;
@@ -84,17 +74,18 @@ namespace XPlaneConnector
 
                 // put the character into the array at the correct location and update the character counter
                 _inProcessArray[characterPosition] = floatCharacter;
-                CharactersProcessed++;
+                _charactersProcessed++;
 
                 // if all the characters have been processed, convert the array to a string and update the value
-                if (CharactersProcessed == StringLength)
+                if (_charactersProcessed == BufferSize)
                 {
                     LastUpdateTime = DateTime.Now;
                     StringBuilder builder = new StringBuilder();
                     foreach (var code in _inProcessArray)
                     {
                         char character = (char)code;
-                        builder.Append(character);
+                        if (character != 0)
+                            builder.Append(character);
                     }
 
                     string recentlyReceivedString = builder.ToString();
@@ -111,7 +102,7 @@ namespace XPlaneConnector
 
         public StringDataRefElement()
         {
-            CharactersProcessed = 0;
+            _charactersProcessed = 0;
             Value = "";
         }
 
@@ -132,12 +123,12 @@ namespace XPlaneConnector
                 if (stringLength == 0)
                     throw new ArgumentException("string length for the dataref value cannot be zero");
 
-                CharactersProcessed = 0;
+                _charactersProcessed = 0;
                 Value = "";
                 DataRefPath = datarefPath;
                 Frequency = frequency;
-                StringLength = stringLength;
-                _inProcessArray = new float[StringLength];
+                BufferSize = stringLength;
+                _inProcessArray = new float[BufferSize];
                 LastUpdateTime = DateTime.MinValue;
             }
             catch (Exception ex)

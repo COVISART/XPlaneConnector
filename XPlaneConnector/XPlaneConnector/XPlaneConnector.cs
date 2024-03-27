@@ -261,6 +261,48 @@ public class XPlaneConnector : IDisposable
     }
 
     /// <summary>
+    /// Subscribes to a StringDataRef using the path name of the dataref which requests a string 
+    /// </summary>
+    /// <param name="stringDatarefPath">'path' name of the dataref.  Obtain from DataRefTool Plugin in XPlane</param>
+    /// <param name="frequency">Number of times per second XPlane should update this value</param>
+    /// <param name="bufferSize">Length of the buffer that is used to received the string from XPlane.  Using the DataRefTool plugin on 
+    /// XPlane, click on the desired dataref and click the 'info' button to find the buffer size</param>
+    /// <param name="onchange">The callback method to be subscribed to the OnValueChange EventAction</param>
+    public void Subscribe(string stringDatarefPath, int frequency, int bufferSize, Action<StringDataRefElement, string> onchange)
+    {
+
+        var stringDatarefElement = new StringDataRefElement()
+        {
+            DataRefPath = stringDatarefPath,
+            BufferSize = bufferSize,
+        };
+        // Complete the subscription process to create the subscriptions for each character
+        Subscribe(stringDatarefElement, frequency, onchange);
+
+    }
+
+    /// <summary>
+    /// Subscribes to a Dataref using the 'path' name of the dataref.
+    /// </summary>
+    /// <param name="datarefPath"><'path' name of the dataref.  Obtain from DataRefTool Plugin in XPlane/param>
+    /// <param name="frequency">Number of times per second XPlane should update this value</param>
+    /// <param name="onchange">The callback method to be subscribed to the OnValueChange EventAction<</param>
+    public void Subscribe(string datarefPath, int frequency, Action<DataRefElement, float> onchange)
+    {
+
+        var datarefElement = new DataRefElement()
+        {
+            DataRefPath = datarefPath,
+            Frequency = frequency,
+            LastUpdate = DateTime.MinValue,
+        };
+        datarefElement.OnValueChange += onchange;
+
+    }
+
+
+
+    /// <summary>
     /// Subscribe to a DataRef, notification will be sent every time the value changes
     /// </summary>
     /// <param name="datarefElement">XplaneConnector.Datarefs.dataref to subscribe to.  Getting one of these predefined datarefs will return
@@ -328,7 +370,7 @@ public class XPlaneConnector : IDisposable
 
             // Create individual subscriptions for each character of a string.  Each character gets its own datarefElement and associated
             // index when the new DataRefElement is added to the DataRefs List
-            for (var positionWithinString = 0; positionWithinString < stringDataRefElement.StringLength; positionWithinString++)
+            for (var positionWithinString = 0; positionWithinString < stringDataRefElement.BufferSize; positionWithinString++)
             {
                 var datarefElementWithArrayNotation = new DataRefElement
                 {
@@ -404,7 +446,7 @@ public class XPlaneConnector : IDisposable
 
         // Create individual subscriptions for each character of a string.  Each character gets its own datarefElement and associated
         // index when the new DataRefElement is added to the DataRefs List
-        for (var positionWithinString = 0; positionWithinString < stringDataRefElement.StringLength; positionWithinString++)
+        for (var positionWithinString = 0; positionWithinString < stringDataRefElement.BufferSize; positionWithinString++)
         {
             var dataRefPath = $"{stringDataRefElement.DataRefPath}[{positionWithinString}]";
             Unsubscribe(dataRefPath, (e, v) =>

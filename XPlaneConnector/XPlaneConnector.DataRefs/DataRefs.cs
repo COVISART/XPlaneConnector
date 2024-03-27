@@ -106,9 +106,9 @@ namespace XPlaneConnector.DataRefs
             get
             {
                 return new StringDataRefElement
-                {                 
+                {
                     DataRefPath = "sim/aircraft/view/acf_tailnum",
-                    StringLength = 40,
+                    BufferSize = 40,
                     Frequency = DefaultFrequency
                 };
             }
@@ -133,7 +133,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/aircraft/view/acf_author",
-                    StringLength = 500,
+                    BufferSize = 500,
                     Frequency = DefaultFrequency
                 };
             }
@@ -145,7 +145,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/aircraft/view/acf_descrip",
-                    StringLength = 260,
+                    BufferSize = 260,
                     Frequency = DefaultFrequency
                 };
             }
@@ -157,7 +157,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/aircraft/view/acf_notes",
-                    StringLength = 240,
+                    BufferSize = 240,
                     Frequency = DefaultFrequency
                 };
             }
@@ -455,7 +455,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/aircraft/view/acf_ICAO",
-                    StringLength = 40,
+                    BufferSize = 40,
                     Frequency = DefaultFrequency
                 };
             }
@@ -532,7 +532,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/aircraft/view/acf_livery_path",
-                    StringLength = 1024,
+                    BufferSize = 1024,
                     Frequency = DefaultFrequency
                 };
             }
@@ -41033,7 +41033,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/version/sim_build_string",
-                    StringLength = 256,
+                    BufferSize = 256,
                     Frequency = DefaultFrequency
                 };
             }
@@ -41045,7 +41045,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/version/xplm_build_string",
-                    StringLength = 256,
+                    BufferSize = 256,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52484,7 +52484,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav1_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52496,7 +52496,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav2_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52508,7 +52508,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/adf1_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52520,7 +52520,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/adf2_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52532,7 +52532,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/gps_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52544,7 +52544,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/gps2_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52556,7 +52556,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/dme_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52568,7 +52568,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav3_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52580,7 +52580,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav4_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52592,7 +52592,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav5_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52604,7 +52604,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav6_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52616,7 +52616,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav7_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52628,7 +52628,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav8_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52640,7 +52640,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav9_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52652,7 +52652,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav10_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52664,7 +52664,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav11_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52676,7 +52676,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav12_nav_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52688,7 +52688,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav1_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52700,7 +52700,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav2_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52712,7 +52712,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav3_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52724,7 +52724,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav4_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52736,7 +52736,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav5_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52748,7 +52748,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav6_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52760,7 +52760,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav7_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52772,7 +52772,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav8_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52784,7 +52784,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav9_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -52796,7 +52796,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/radios/indicators/nav10_dme_id",
-                    StringLength = 150,
+                    BufferSize = 150,
                     Frequency = DefaultFrequency
                 };
             }
@@ -55590,7 +55590,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/tcas/targets/flight_id",
-                    StringLength = 512,
+                    BufferSize = 512,
                     Frequency = DefaultFrequency
                 };
             }
@@ -55602,7 +55602,7 @@ namespace XPlaneConnector.DataRefs
                 return new StringDataRefElement
                 {
                     DataRefPath = "sim/cockpit2/tcas/targets/icao_type",
-                    StringLength = 512,
+                    BufferSize = 512,
                     Frequency = DefaultFrequency
                 };
             }
