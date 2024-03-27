@@ -147,6 +147,7 @@ public class XPlaneConnector : IDisposable
     {
         try
         {
+
             if (_client == null)
                 throw new Exception("no UDP client available to stop existing XPlane datarefs");
 

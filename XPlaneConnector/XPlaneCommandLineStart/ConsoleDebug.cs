@@ -47,6 +47,7 @@ namespace XPlaneCommandLineStart
                 });
 
             await connector.Start();
+
         }
 
 

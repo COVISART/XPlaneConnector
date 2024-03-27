@@ -4,22 +4,70 @@ namespace XPlaneConnector
 {
     public class DataRefElement
     {
-        private static object lockElement = new object();
-        private static int current_id = 0;
-        public int Id { get; set; }
-        public string? DataRefPath { get; set; }
         /// <summary>
-        /// Character position within the string.  Assigned only to datarefs returning a string value
+        /// Used to prevent other threads from accessing class during critical operations, like setting unique Id
+        /// </summary>
+        private static object lockElement = new object();
+
+        /// <summary>
+        /// Running static counter used in creating unique Id
+        /// </summary>
+        private static int current_id = 0;
+
+        /// <summary>
+        /// Unique Id assigned for each element
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// The dataref name.  'Path' is used because with the '/' characters used in the name, it looks like a path
+        /// </summary>
+        public string? DataRefPath { get; set; }
+
+        /// <summary>
+        /// Character position within the buffer.  Assigned only to datarefs returning a character of a string
         /// </summary>
         public int? CharacterPosition { get; set; }
+
+        /// <summary>
+        /// The number of updates per second requested from XPlane
+        /// </summary>
         public int Frequency { get; set; } = 5;
+
+        /// <summary>
+        /// Since float cannot be null, IsInitialized is used to determine if the Value has been updated since creation
+        /// Use is deprecated as of darwinIcesurfer version 2.0
+        /// </summary>
         public bool IsInitialized { get; set; }
+
+        /// <summary>
+        /// Hold a timestamp for the last time the value was refreshed
+        /// </summary>
         public DateTime LastUpdate { get; set; } = DateTime.MinValue;
+
+        /// <summary>
+        /// Used to hold descriptive information about the units.  This is mostly used with the predefined XplaneConnector.DataRefs
+        /// </summary>
         public string? Units { get; set; }
+
+        /// <summary>
+        /// Used to hold descriptive information about the returned value.  This is mostly used with the predefined XplaneConnector.DataRefs
+        /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// The most recent Value for this dataref returned from XPlane
+        /// </summary>
         public float Value { get; set; } = float.MinValue;
+
+        /// <summary>
+        /// Subscribe to this EventAction to be notified when the value changes
+        /// </summary>
         public event Action<DataRefElement, float>? OnValueChange;
 
+        /// <summary>
+        /// CONSTRUCTOR.  Assigns the unique Id to this datarefElement
+        /// </summary>
         public DataRefElement()
         {
             lock (lockElement)
@@ -29,10 +77,17 @@ namespace XPlaneConnector
             IsInitialized = false;
         }
 
-        public void ClearSubscriptions(){
+        /// <summary>
+        /// Use this method to clear ALL subscriptions.  Used mainly during the unsubscribe operation
+        /// </summary>
+        public void ClearSubscriptions()
+        {
             OnValueChange = null;
         }
 
+        /// <summary>
+        /// Return Time since most recent refresh from XPlane
+        /// </summary>
         public TimeSpan Age
         {
             get
@@ -42,12 +97,9 @@ namespace XPlaneConnector
         }
 
         /// <summary>
-        /// Updates a single value.  In the case of a string dataref, this is one character,  If the value is numeric, it will be converted
-        /// from the float that is passed in
+        /// Updates a single value.  In the case of a string dataref, this is one character,  
         /// </summary>
-        /// <param name="id">unique id for this dataref for THIS SESSION with xplane</param>
         /// <param name="value">A float value that can be converted into the appropriate numeric value or character</param>
-        /// <returns></returns>
         public void Update(float value)
         {
             LastUpdate = DateTime.Now;

@@ -10,23 +10,23 @@ namespace XPlaneConnector
         private float[] _inProcessArray = new float[0];
 
         /// <summary>
-        /// The full dataref path
+        /// The full dataref name in a 'path' type format due to the '/' characters in the name
         /// <example>sim/cockpit2/radios/indicators/nav1_nav_id</example>
         /// </summary>
         public string? DataRefPath { get; set; }
 
         /// <summary>
-        ///  Frequency at which XPlane will send the characters for the string
+        ///  Frequency at which XPlane will send the individual characters to fill the buffer
         /// </summary>
         public int Frequency { get; set; }
 
         /// <summary>
-        /// The defined buffer size to contain the dataref value
+        /// The defined buffer size to contain the dataref value.  The buffer may be longer than the string it contains
         /// </summary>
         public int BufferSize { get; set; }
 
         /// <summary>
-        /// The value that will be retained in this class once all characters have been received
+        /// The string that was created once all characters have been received
         /// </summary>
         public string Value { get; set; }
 
@@ -36,20 +36,28 @@ namespace XPlaneConnector
         public DateTime LastUpdateTime { get; set; }
 
         /// <summary>
-        /// After a threshold, the string will be reset
+        /// The timespan used to determine if the current buffer is 'stale'. 
         /// </summary>
-        private TimeSpan AgeThreshold = TimeSpan.FromSeconds(5000);
-
+        private TimeSpan AgeThreshold = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// The number of Characters that have been processed since it was determined that a new value is being transmitted
+        /// The number of Characters that have been processed since the start of the buffer filling task
         /// </summary>
         private int _charactersProcessed;
 
         /// <summary>
-        /// Clients can subscribe to this Action which will emit a signal when the entire string is updated 
+        /// Clients can subscribe to this Action which will emit a signal when the ENTIRE STRING is updated 
         /// </summary>
         public event Action<StringDataRefElement, string>? OnValueChange;
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        public StringDataRefElement()
+        {
+            _charactersProcessed = 0;
+            Value = "";
+        }
 
         /// <summary>
         /// Creates a new array to hold character values when the old array is stale, or  characters for a new string begin to 
@@ -99,13 +107,6 @@ namespace XPlaneConnector
                 }
             }
         }
-
-        public StringDataRefElement()
-        {
-            _charactersProcessed = 0;
-            Value = "";
-        }
-
 
         /// <summary>
         /// Create a String DataRefElement for each character that is a part of a string dataref
