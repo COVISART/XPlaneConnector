@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ public class XPlaneConnector : IDisposable
     public event DataRefReceived? OnDataRefReceived;
     public delegate void LogHandler(string message);
     private Dictionary<int, DataRefElement> DataRefs;
+    private List<StringDataRefElement> StringDataRefs = new List<StringDataRefElement>();
 
     public DateTime LastReceive { get; internal set; }
     public IEnumerable<byte> LastBuffer { get; internal set; } = new byte[0];
@@ -46,6 +48,7 @@ public class XPlaneConnector : IDisposable
         XPlaneEP = new IPEndPoint(IPAddress.Parse(ip), xplanePort);
         DataRefs = new Dictionary<int, DataRefElement>();
         OnRawReceive += ParseResponse;
+
     }
 
 
@@ -202,11 +205,17 @@ public class XPlaneConnector : IDisposable
                     var value = BitConverter.ToSingle(buffer, pos);
                     //Debug.Print("[{0}]{1}", pos, (char)(int)(value));
                     pos += BYTES_PER_INDEX_OR_FlOAT;
-                    if (!DataRefs.ContainsKey(id))
-                        throw new ArgumentException(String.Format("key {0} not found in Datarefs", id));
 
-                    DataRefs[id].Update(value);
-                    OnDataRefReceived?.Invoke(DataRefs[id]);
+                    // once a dataref has been unsubscribed, a zero placeholder will be sent by Xplane
+                    if (DataRefs.ContainsKey(id))
+                    {
+                        DataRefs[id].Update(value);
+                        OnDataRefReceived?.Invoke(DataRefs[id]);
+                    }
+                    else
+                    {
+                        // Debug.Print("There should not be a Dataref with value zero");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -233,7 +242,7 @@ public class XPlaneConnector : IDisposable
         dg.Add("CMND");
         dg.Add(command.Command);
 
-        _client.Send(dg.Get(), dg.Len);
+        _client.Send(dg.Get(), dg.Len,XPlaneEP);
     }
 
     /// <summary>
@@ -370,6 +379,16 @@ public class XPlaneConnector : IDisposable
 
             stringDataRefElement.OnValueChange += onchange;
 
+            // verify that there isn't already a subscription for the same dataref
+            if (StringDataRefs != null)
+            {
+                if (StringDataRefs.FirstOrDefault(item => item.DataRefPath == stringDataRefElement.DataRefPath) != null)
+                    throw new Exception("Did not re-subscribe to " + stringDataRefElement.DataRefPath);
+            }
+
+            // Keep a list of the so it can be unsubscribed properly
+            StringDataRefs?.Add(stringDataRefElement);
+
             // Create individual subscriptions for each character of a string.  Each character gets its own datarefElement and associated
             // index when the new DataRefElement is added to the DataRefs List
             for (var positionWithinString = 0; positionWithinString < stringDataRefElement.BufferSize; positionWithinString++)
@@ -450,14 +469,22 @@ public class XPlaneConnector : IDisposable
         // index when the new DataRefElement is added to the DataRefs List
         for (var positionWithinString = 0; positionWithinString < stringDataRefElement.BufferSize; positionWithinString++)
         {
-            var dataRefPath = $"{stringDataRefElement.DataRefPath}[{positionWithinString}]";
-            //TODO:  Is Update needed in unsubscribe?
-            Unsubscribe(dataRefPath, (e, v) =>
+
+            var datarefElementWithArrayNotation = $"{stringDataRefElement.DataRefPath}[{positionWithinString}]";
+
+
+            // the same delegate-method that was passed in when the subscription was created is again passed
+            // so it can be unsubscribed
+            Unsubscribe(datarefElementWithArrayNotation, (e, v) =>
             {
-                stringDataRefElement.Update(positionWithinString, v);
+                if (e.CharacterPosition.HasValue)
+                    stringDataRefElement.Update((int)e.CharacterPosition, v);
+                else
+                    throw new Exception("String Character does not have characterPosition in StringDataRefElement");
             });
         }
     }
+
 
     /// <summary>
     /// Notifies X-Plane to stop sending this DataRef element
@@ -484,7 +511,7 @@ public class XPlaneConnector : IDisposable
             dg.Add(datarefPath);
             dg.FillTo(413);
 
-            _client?.Send(dg.Get(), dg.Len);
+            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
 
             // Unsubscribe from the OnValueChange event to stop receiving notifications when the value changes
             // if no individual subscription to the EventAction is provided, clear ALL the subscriptions
@@ -507,7 +534,7 @@ public class XPlaneConnector : IDisposable
 
 
     /// <summary>
-    /// Informs X-Plane to change the value of the DataRef
+    /// Notifies X-Plane to change the value of the DataRef
     /// </summary>
     /// <param name="dataref">DataRef that will be changed</param>
     /// <param name="value">New value of the DataRef</param>
@@ -522,19 +549,19 @@ public class XPlaneConnector : IDisposable
     }
 
     /// <summary>
-    /// Informs X-Plane to change the value of the DataRef
+    /// Notifies X-Plane to change the value of the DataRef
     /// </summary>
-    /// <param name="dataref">DataRef that will be changed</param>
+    /// <param name="datarefPath">DataRef that will be changed</param>
     /// <param name="value">New value of the DataRef</param>
-    public void SetDataRefValue(string dataref, float value)
+    public void SetDataRefValue(string datarefPath, float value)
     {
         var dg = new XPDatagram();
         dg.Add("DREF");
         dg.Add(value);
-        dg.Add(dataref);
+        dg.Add(datarefPath);
         dg.FillTo(509);
 
-        _client?.Send(dg.Get(), dg.Len);
+        _client?.Send(dg.Get(), dg.Len,XPlaneEP);
     }
     /// <summary>
     /// Informs X-Plane to change the value of the DataRef
@@ -549,7 +576,7 @@ public class XPlaneConnector : IDisposable
         dg.Add(dataref);
         dg.FillTo(509);
 
-        _client?.Send(dg.Get(), dg.Len);
+        _client?.Send(dg.Get(), dg.Len, XPlaneEP);
     }
 
     /// <summary>
@@ -560,7 +587,7 @@ public class XPlaneConnector : IDisposable
         var dg = new XPDatagram();
         dg.Add("QUIT");
 
-        _client?.Send(dg.Get(), dg.Len);
+        _client?.Send(dg.Get(), dg.Len, XPlaneEP);
     }
 
     /// <summary>
@@ -574,7 +601,7 @@ public class XPlaneConnector : IDisposable
 
         dg.Add(system.ToString(EnCulture));
 
-        _client?.Send(dg.Get(), dg.Len);
+        _client?.Send(dg.Get(), dg.Len, XPlaneEP);
     }
 
     /// <summary>
@@ -588,7 +615,7 @@ public class XPlaneConnector : IDisposable
 
         dg.Add(system.ToString(EnCulture));
 
-        _client?.Send(dg.Get(), dg.Len);
+        _client?.Send(dg.Get(), dg.Len,XPlaneEP);
     }
 
     protected virtual void Dispose(bool a)

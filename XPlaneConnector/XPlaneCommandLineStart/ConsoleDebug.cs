@@ -15,6 +15,7 @@ namespace XPlaneCommandLineStart
     {
         public static async Task RunAsync(string[] args)
         {
+
             //var connector = new XPlaneConnector.XPlaneConnector(ip: "192.168.29.220", xplanePort: 49000); // Default IP 127.0.0.1 Port 49000
             var connector = new XPlaneConnector.XPlaneConnector(); // Default IP 127.0.0.1 Port 49000
 
@@ -70,7 +71,32 @@ namespace XPlaneCommandLineStart
                     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
                 });
 
+            // Set up a timer to trigger the unsubscribe action after XX seconds
+            var timer = new System.Threading.Timer( _ =>
+            {
+                connector.Unsubscribe("sim/cockpit2/gauges/indicators/compass_heading_deg_mag",OnCompassHeadingMethod);
+            }, null, TimeSpan.FromSeconds(10), TimeSpan.Zero);
+
+            
+            var timer2 = new System.Threading.Timer( _ =>
+            {
+                connector.Unsubscribe(
+                    "sim/cockpit2/autopilot/altitude_readout_preselector",
+                    (element, value) =>
+                    {
+                        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
+                    });
+            }, null, TimeSpan.FromSeconds(15), TimeSpan.Zero);
+
+            float obs_heading = 150;
+            var timer3 = new System.Threading.Timer( _ =>
+            {
+                connector.SetDataRefValue("sim/cockpit/radios/nav1_obs_degm", obs_heading++);
+            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+
+            // Start the connector -- will run until
             await connector.Start();
+
 
         }
 
