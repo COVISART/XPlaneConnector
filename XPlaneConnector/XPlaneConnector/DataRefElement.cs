@@ -104,7 +104,17 @@ namespace XPlaneConnector
         {
             LastUpdate = DateTime.Now;
 
-            if (value != Value)
+            // If this element is part of a string array that is being returned, all the characters received from
+            // Xplane must be passed on to the method that assemble the characters into a string,  regardless if they have changed or not
+            // If CharacterPosition has a value assigned to it, it is part of a string
+            if (CharacterPosition.HasValue)
+            {
+                Value = value;
+                IsInitialized = true;
+                OnValueChange?.Invoke(this, Value);
+            }
+
+            else if (value != Value)
             {
                 Value = value;
                 IsInitialized = true;

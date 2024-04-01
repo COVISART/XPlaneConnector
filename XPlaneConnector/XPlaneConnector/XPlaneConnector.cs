@@ -297,7 +297,8 @@ public class XPlaneConnector : IDisposable
             Frequency = frequency,
             LastUpdate = DateTime.MinValue,
         };
-        datarefElement.OnValueChange += onchange;
+        // Complete the subscription process to create the subscriptions for each character
+        Subscribe(datarefElement, frequency, onchange);
 
     }
 
@@ -450,6 +451,7 @@ public class XPlaneConnector : IDisposable
         for (var positionWithinString = 0; positionWithinString < stringDataRefElement.BufferSize; positionWithinString++)
         {
             var dataRefPath = $"{stringDataRefElement.DataRefPath}[{positionWithinString}]";
+            //TODO:  Is Update needed in unsubscribe?
             Unsubscribe(dataRefPath, (e, v) =>
             {
                 stringDataRefElement.Update(positionWithinString, v);

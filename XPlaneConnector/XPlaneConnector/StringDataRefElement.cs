@@ -78,16 +78,17 @@ namespace XPlaneConnector
                     // The last UpdateTime will be updated when starting to fill the array and when filling is completed
                     // that way if it is only partially filled by the time it has aged-out, it will be reset
                     LastUpdateTime = DateTime.Now;
+                    //Debug.Print("new string being created for {0}", this.DataRefPath);
                 }
 
                 // put the character into the array at the correct location and update the character counter
                 _inProcessArray[characterPosition] = floatCharacter;
                 _charactersProcessed++;
+                //Debug.Print("[{0}]{1}", characterPosition, (char)floatCharacter);
 
                 // if all the characters have been processed, convert the array to a string and update the value
                 if (_charactersProcessed == BufferSize)
                 {
-                    LastUpdateTime = DateTime.Now;
                     StringBuilder builder = new StringBuilder();
                     foreach (var code in _inProcessArray)
                     {
@@ -104,6 +105,11 @@ namespace XPlaneConnector
                         Value = recentlyReceivedString;
                         OnValueChange?.Invoke(this, Value);
                     }
+
+                    // reset characters processed this will allow waiting for a new string
+                    _charactersProcessed = 0;
+                    LastUpdateTime = DateTime.Now;
+                    _inProcessArray = new float[BufferSize];
                 }
             }
         }
