@@ -11,35 +11,66 @@ namespace XPlaneCommandLineStart
             ConsoleDebug.RunAsync(args).GetAwaiter().GetResult();
         }
     }
+
+
+
     public class ConsoleDebug
     {
+
+        private const float TESTING_UNSUBSCRIBE_TIMEOUT = 30;
         public static async Task RunAsync(string[] args)
         {
+            // Discover XPlane instances and subscribe to some of the signals
+            _ = XPlaneDiscovery.StartBeaconReceiverAsync();
+            XPlaneDiscovery.OnXplaneRunningInstanceDiscovered += (value) => Debug.Print("XPlaneDiscovered {0} {1}\n", value.ComputerName, value.IPaddress);
+            XPlaneDiscovery.OnXplaneRunningInstanceInactive += (value) => Debug.Print("Xplane instance removed {0} {1}\n", value.ComputerName, value.IPaddress);
 
-            //var connector = new XPlaneConnector.XPlaneConnector(ip: "192.168.29.220", xplanePort: 49000); // Default IP 127.0.0.1 Port 49000
-            var connector = new XPlaneConnector.XPlaneConnector(); // Default IP 127.0.0.1 Port 49000
+            // wait until at least one instance of XPlane is discovered
+            while (XPlaneDiscovery.RunningInstances.Count == 0)
+            {
+                Thread.Sleep(1000);
+            }
 
-            // connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.AircraftViewAcfTailnum, 1, (element, value) =>
-            // {
-            //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
-            // });
+            // connect to the loopback default connector
+            var  connector = new XPlaneConnector.XPlaneConnector(); //Default IP 127.0.0.1 Port 49000
 
-            // connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2RadiosIndicatorsNav1NavId, 1, (element, value) =>
-            // {
-            //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}" );
-            // });
+            // If XPlanedDiscovery has found an instance on the network, connect to it
+            if (!XPlaneDiscovery.RunningInstances.IsEmpty)
+            {
+                var ipaddress = XPlaneDiscovery.RunningInstances.First().Value.IPaddress;
+                if (ipaddress != null)
+                {
+                    connector = new XPlaneConnector.XPlaneConnector(ipaddress); // Default IP 127.0.0.1 Port 49000
+                }
 
-            // //connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2GaugesIndicatorsCompassHeadingDegMag, 5, OnCompassHeadingMethod);
-
-            // connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.CockpitRadiosCom1FreqHz, 1, (e, v) =>
-            // {
-            //     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {v}" );
-            // });
+            }
 
 
-            //------------------------------------
-            // Test for the new methods which accept a dataref name (path) rather than the precompiled dataref element
-            //------------------------------------
+            //===========================================================================================================
+            // Subscribe using the predefined datarefs using the version 1.3 syntax
+            //===========================================================================================================
+            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.AircraftViewAcfTailnum, 1, (element, value) =>
+            {
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
+            });
+
+            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2RadiosIndicatorsNav1NavId, 1, (element, value) =>
+            {
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}" );
+            });
+
+            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2GaugesIndicatorsCompassHeadingDegMag, 5, OnCompassHeadingMethod);
+
+            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.CockpitRadiosCom1FreqHz, 1, (e, v) =>
+            {
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {v}" );
+            });
+
+
+            //===========================================================================================================
+            // Subscribe using the Syntax introduced in version 2.0 which accept a dataref name (path) 
+            // rather than the precompiled dataref element
+            //===========================================================================================================
             connector.Subscribe(
                 "sim/aircraft/view/acf_tailnum",
                 frequency: 5,
@@ -55,7 +86,7 @@ namespace XPlaneCommandLineStart
                 bufferSize: 150,
                 (element, value) =>
                 {
-                    Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}" );
+                    Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
                 });
 
             connector.Subscribe(
@@ -71,14 +102,16 @@ namespace XPlaneCommandLineStart
                     Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
                 });
 
-            // Set up a timer to trigger the unsubscribe action after XX seconds
-            var timer = new System.Threading.Timer( _ =>
+            // Set up a timers to trigger unsubscribe actions after XX seconds
+            // This is required before the connector is started as it runs perpetually once started
+            var timer = new System.Threading.Timer(_ =>
             {
-                connector.Unsubscribe("sim/cockpit2/gauges/indicators/compass_heading_deg_mag",OnCompassHeadingMethod);
-            }, null, TimeSpan.FromSeconds(10), TimeSpan.Zero);
+                connector.Unsubscribe("sim/cockpit2/gauges/indicators/compass_heading_deg_mag", OnCompassHeadingMethod);
+                Debug.Print("Unsubscribed from sim/cockpit2/gauges/indicators/compass_heading_deg_mag\n");
+            }, null, TimeSpan.FromSeconds(TESTING_UNSUBSCRIBE_TIMEOUT), TimeSpan.Zero);
 
-            
-            var timer2 = new System.Threading.Timer( _ =>
+
+            var timer2 = new System.Threading.Timer(_ =>
             {
                 connector.Unsubscribe(
                     "sim/cockpit2/autopilot/altitude_readout_preselector",
@@ -86,18 +119,17 @@ namespace XPlaneCommandLineStart
                     {
                         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
                     });
-            }, null, TimeSpan.FromSeconds(15), TimeSpan.Zero);
+                Debug.Print("Unsubscribed from sim/cockpit2/autopilot/altitude_readout_preselector\n");
+            }, null, TimeSpan.FromSeconds(TESTING_UNSUBSCRIBE_TIMEOUT * 2), TimeSpan.Zero);
 
             float obs_heading = 150;
-            var timer3 = new System.Threading.Timer( _ =>
+            var timer3 = new System.Threading.Timer(_ =>
             {
                 connector.SetDataRefValue("sim/cockpit/radios/nav1_obs_degm", obs_heading++);
             }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
 
             // Start the connector -- will run until
             await connector.Start();
-
-
         }
 
 

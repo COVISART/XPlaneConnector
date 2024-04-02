@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -31,8 +32,14 @@ public class XPlaneConnector : IDisposable
 
     public delegate void DataRefReceived(DataRefElement dataRef);
     public event DataRefReceived? OnDataRefReceived;
+
     public delegate void LogHandler(string message);
-    private Dictionary<int, DataRefElement> DataRefs;
+    public event LogHandler? OnLog;
+
+    public delegate void SocketWriteError(object sender, string methodName);
+    public event SocketWriteError? OnSocketWriteError;
+
+    private Dictionary<int, DataRefElement> DataRefs = new Dictionary<int, DataRefElement>();
     private List<StringDataRefElement> StringDataRefs = new List<StringDataRefElement>();
 
     public DateTime LastReceive { get; internal set; }
@@ -46,6 +53,7 @@ public class XPlaneConnector : IDisposable
     public XPlaneConnector(string ip = "127.0.0.1", int xplanePort = 49000)
     {
         XPlaneEP = new IPEndPoint(IPAddress.Parse(ip), xplanePort);
+        // Clear out any old Datarefs when a new connector is established
         DataRefs = new Dictionary<int, DataRefElement>();
         OnRawReceive += ParseResponse;
 
@@ -242,7 +250,16 @@ public class XPlaneConnector : IDisposable
         dg.Add("CMND");
         dg.Add(command.Command);
 
-        _client.Send(dg.Get(), dg.Len,XPlaneEP);
+        try
+        {
+            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        }
+        catch (Exception ex)
+        {
+            string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+            Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+            OnSocketWriteError?.Invoke(this, methodName);
+        }
     }
 
     /// <summary>
@@ -271,7 +288,7 @@ public class XPlaneConnector : IDisposable
     }
 
     /// <summary>
-    /// Subscribes to a StringDataRef using the path name of the dataref which requests a string 
+    /// Subscribes to a StringDataRef using the name of the dataref (looks like a path) which requests a string 
     /// </summary>
     /// <param name="stringDatarefPath">'path' name of the dataref.  Obtain from DataRefTool Plugin in XPlane</param>
     /// <param name="frequency">Number of times per second XPlane should update this value</param>
@@ -292,7 +309,7 @@ public class XPlaneConnector : IDisposable
     }
 
     /// <summary>
-    /// Subscribes to a Dataref using the 'path' name of the dataref.
+    /// Subscribes to a Dataref using the dataref name (looks like a path)
     /// </summary>
     /// <param name="datarefPath"><'path' name of the dataref.  Obtain from DataRefTool Plugin in XPlane/param>
     /// <param name="frequency">Number of times per second XPlane should update this value</param>
@@ -327,7 +344,7 @@ public class XPlaneConnector : IDisposable
 
 
     /// <summary>
-    /// Subscribe to a DataRef, notification will be sent every time the value changes
+    /// Subscribe to a DataRef for one character from a string
     /// </summary>
     /// <param name="datarefElement">XplaneConnector.Datarefs.dataref to subscribe to.  Getting one of these predefined datarefs will return
     /// a partially filled-in datarefElement</param>
@@ -350,10 +367,23 @@ public class XPlaneConnector : IDisposable
             if (characterPosition.HasValue)
                 datarefElement.CharacterPosition = characterPosition;
 
+            // verify that there isn't already a subscription for the same dataref
+            if (DataRefs != null)
+            {
+                if (DataRefs.Any(pair => pair.Value.DataRefPath == datarefElement.DataRefPath))
+                {
+                    Debug.Print("Attempted to re-subscribe to {0}\n", datarefElement.DataRefPath);
+                    return;
+                }
 
-
-            // The index within the dataref will be used as the dictionary key as they both require a unique value
-            DataRefs[datarefElement.Id] = datarefElement;
+                // The index within the dataref will be used as the dictionary key as they both require a unique value
+                DataRefs[datarefElement.Id] = datarefElement;
+            }
+            else
+            {
+                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+                Debug.Print("DataRefs is null in \'{0}\'which should not happen", methodName);
+            }
         }
         catch (Exception ex)
         {
@@ -383,7 +413,7 @@ public class XPlaneConnector : IDisposable
             if (StringDataRefs != null)
             {
                 if (StringDataRefs.FirstOrDefault(item => item.DataRefPath == stringDataRefElement.DataRefPath) != null)
-                    throw new Exception("Did not re-subscribe to " + stringDataRefElement.DataRefPath);
+                    Debug.Print("Attempted to re-subscribe to {0} which is already subscribed\n", stringDataRefElement.DataRefPath);
             }
 
             // Keep a list of the so it can be unsubscribed properly
@@ -442,7 +472,16 @@ public class XPlaneConnector : IDisposable
                 dg.Add(element.DataRefPath);
                 dg.FillTo(413);
 
-                _client.Send(dg.Get(), dg.Len, XPlaneEP);
+                try
+                {
+                    _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+                }
+                catch (Exception ex)
+                {
+                    string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+                    Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+                    OnSocketWriteError?.Invoke(this, methodName);
+                }
             }
         }
         catch (Exception ex)
@@ -511,7 +550,16 @@ public class XPlaneConnector : IDisposable
             dg.Add(datarefPath);
             dg.FillTo(413);
 
-            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+            try
+            {
+                _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+            }
+            catch (Exception ex)
+            {
+                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+                Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+                OnSocketWriteError?.Invoke(this, methodName);
+            }
 
             // Unsubscribe from the OnValueChange event to stop receiving notifications when the value changes
             // if no individual subscription to the EventAction is provided, clear ALL the subscriptions
@@ -555,16 +603,26 @@ public class XPlaneConnector : IDisposable
     /// <param name="value">New value of the DataRef</param>
     public void SetDataRefValue(string datarefPath, float value)
     {
+
         var dg = new XPDatagram();
         dg.Add("DREF");
         dg.Add(value);
         dg.Add(datarefPath);
         dg.FillTo(509);
 
-        _client?.Send(dg.Get(), dg.Len,XPlaneEP);
+        try
+        {
+            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        }
+        catch (Exception ex)
+        {
+            string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+            Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+            OnSocketWriteError?.Invoke(this, methodName);
+        }
     }
     /// <summary>
-    /// Informs X-Plane to change the value of the DataRef
+    /// Notifies X-Plane to change the value of the DataRef
     /// </summary>
     /// <param name="dataref">DataRef that will be changed</param>
     /// <param name="value">New value of the DataRef</param>
@@ -576,7 +634,16 @@ public class XPlaneConnector : IDisposable
         dg.Add(dataref);
         dg.FillTo(509);
 
-        _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        try
+        {
+            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        }
+        catch (Exception ex)
+        {
+            string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+            Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+            OnSocketWriteError?.Invoke(this, methodName);
+        }
     }
 
     /// <summary>
@@ -587,7 +654,16 @@ public class XPlaneConnector : IDisposable
         var dg = new XPDatagram();
         dg.Add("QUIT");
 
-        _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        try
+        {
+            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        }
+        catch (Exception ex)
+        {
+            string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+            Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+            OnSocketWriteError?.Invoke(this, methodName);
+        }
     }
 
     /// <summary>
@@ -601,7 +677,16 @@ public class XPlaneConnector : IDisposable
 
         dg.Add(system.ToString(EnCulture));
 
-        _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        try
+        {
+            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        }
+        catch (Exception ex)
+        {
+            string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+            Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+            OnSocketWriteError?.Invoke(this, methodName);
+        }
     }
 
     /// <summary>
@@ -615,7 +700,16 @@ public class XPlaneConnector : IDisposable
 
         dg.Add(system.ToString(EnCulture));
 
-        _client?.Send(dg.Get(), dg.Len,XPlaneEP);
+        try
+        {
+            _client?.Send(dg.Get(), dg.Len, XPlaneEP);
+        }
+        catch (Exception ex)
+        {
+            string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethodName";
+            Debug.Print("Error {0} in {1}: {2}", ex.Message, this.GetType(), methodName);
+            OnSocketWriteError?.Invoke(this, methodName);
+        }
     }
 
     protected virtual void Dispose(bool a)
