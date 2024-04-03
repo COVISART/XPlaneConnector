@@ -47,6 +47,23 @@
                 //"cwd": "${workspaceFolder}/XPlaneConnector"
                 "cwd": "${workspaceFolder}/XPlaneNexus"
             },
+        },
+        {
+            "label": "Create Nuget Debug Package",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "pack",
+                "-c",
+                "Debug",
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/XPlaneNexus"
+            },
         }
     ]
 }

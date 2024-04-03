@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XPlaneConnector
+namespace XPlaneNexus
 {
     public class DataRefElement
     {

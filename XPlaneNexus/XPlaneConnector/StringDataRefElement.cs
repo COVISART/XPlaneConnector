@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace XPlaneConnector
+namespace XPlaneNexus
 {
     public class StringDataRefElement
     {

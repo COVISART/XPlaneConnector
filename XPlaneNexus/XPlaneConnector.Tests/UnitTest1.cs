@@ -1,4 +1,4 @@
-namespace XPlaneConnector.Tests;
+namespace XPlaneNexus.Tests;
 
 public class UnitTest1
 {

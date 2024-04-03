@@ -1,4 +1,4 @@
-namespace XPlaneConnector;
+namespace XPlaneNexus;
 
 using System;
 using System.Collections.Concurrent;

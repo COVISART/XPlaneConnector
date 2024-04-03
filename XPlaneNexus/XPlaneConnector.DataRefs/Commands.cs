@@ -1,4 +1,4 @@
-﻿namespace XPlaneConnector.DataRefs
+﻿namespace XPlaneNexus.DataRefs
 {
     public sealed class Commands
     {

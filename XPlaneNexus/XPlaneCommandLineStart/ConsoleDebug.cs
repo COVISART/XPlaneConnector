@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using XPlaneConnector;
+using XPlaneNexus;
 
 
 namespace XPlaneCommandLineStart
@@ -11,8 +11,6 @@ namespace XPlaneCommandLineStart
             ConsoleDebug.RunAsync(args).GetAwaiter().GetResult();
         }
     }
-
-
 
     public class ConsoleDebug
     {
@@ -32,7 +30,7 @@ namespace XPlaneCommandLineStart
             }
 
             // connect to the loopback default connector
-            var  connector = new XPlaneConnector.XPlaneConnector(); //Default IP 127.0.0.1 Port 49000
+            var  connector = new XPlaneConnector(); //Default IP 127.0.0.1 Port 49000
 
             // If XPlanedDiscovery has found an instance on the network, connect to it
             if (!XPlaneDiscovery.RunningInstances.IsEmpty)
@@ -40,7 +38,7 @@ namespace XPlaneCommandLineStart
                 var ipaddress = XPlaneDiscovery.RunningInstances.First().Value.IPaddress;
                 if (ipaddress != null)
                 {
-                    connector = new XPlaneConnector.XPlaneConnector(ipaddress); // Default IP 127.0.0.1 Port 49000
+                    connector = new XPlaneConnector(ipaddress); // Default IP 127.0.0.1 Port 49000
                 }
 
             }
@@ -49,19 +47,19 @@ namespace XPlaneCommandLineStart
             //===========================================================================================================
             // Subscribe using the predefined datarefs using the version 1.3 syntax
             //===========================================================================================================
-            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.AircraftViewAcfTailnum, 1, (element, value) =>
+            connector.Subscribe(XPlaneNexus.DataRefs.DataRefs.AircraftViewAcfTailnum, 1, (element, value) =>
             {
                 Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}");
             });
 
-            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2RadiosIndicatorsNav1NavId, 1, (element, value) =>
+            connector.Subscribe(XPlaneNexus.DataRefs.DataRefs.Cockpit2RadiosIndicatorsNav1NavId, 1, (element, value) =>
             {
                 Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {element.DataRefPath} - {value}" );
             });
 
-            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.Cockpit2GaugesIndicatorsCompassHeadingDegMag, 5, OnCompassHeadingMethod);
+            connector.Subscribe(XPlaneNexus.DataRefs.DataRefs.Cockpit2GaugesIndicatorsCompassHeadingDegMag, 5, OnCompassHeadingMethod);
 
-            connector.Subscribe(XPlaneConnector.DataRefs.DataRefs.CockpitRadiosCom1FreqHz, 1, (e, v) =>
+            connector.Subscribe(XPlaneNexus.DataRefs.DataRefs.CockpitRadiosCom1FreqHz, 1, (e, v) =>
             {
                 Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} - {e.DataRefPath} - {v}" );
             });

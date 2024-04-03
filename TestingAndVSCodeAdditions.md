@@ -21,7 +21,7 @@ Update the code in XPlaneConnectors.Tests to actually create the tests.  Here is
 using Xunit;
 using XPlaneConnector;
 
-namespace XPlaneConnector.UnitTests
+namespace XPlaneNexus.UnitTests
 {
     public class XPlaneConnector_IsInstanceRunning
     {
@@ -72,7 +72,7 @@ The new class must be added to the solutions file so it is included in any build
 ## Modern approaches to the build files
 
 A modern approach to the bin, obj and other build artifacts is to put all those into a single artifacts file and then use the github exclude.  
-Create a ##directory.build.props** file with the following contents.  The key line is "<UseArtifactsOutput>true</UseArtifactsOutput>"
+Create a ##directory.build.props** file with the following contents.  The key line is "\<UseArtifactsOutput\>true\</UseArtifactsOutput\>"
 
   ```c#
   <Project>
