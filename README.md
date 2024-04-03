@@ -1,21 +1,17 @@
-# XPlaneConnector
+# XPlaneNexus
 
-## UPDATE TO VERSION 2.0 by DarwinIcesurfer
+## VERSION 2.0
+This project is a fork from Max Ferretti's XPlane Connector version 1.3
 
-Written for .NET 8.0
-Adds the ability to specify any dataref using its full name (looks like a path), frequency and buffer size for string datarefs
+Targets .NET 8.0
+Adds subscription to any dataref using its: full name (looks like a path)
+Adds subscription to string-datarefs using:  full name, frequency, and buffer size for string datarefs.  An event is raised when the string has been updated
 
-The Suggested method to get the datarefs is to use DataRefTool plugin for XPlane <https://datareftool.com/>.  Once the desired dataref
-has been found, use the **edit button** to view the buffer size needed for stringDatarefs.
+The Suggested method to get the dataref names is to use DataRefTool plugin for XPlane <https://datareftool.com/>.  Once the desired dataref has been found, use the **edit button** to view the buffer size for stringDatarefs.
 
-Subscribe to a string dataref, rather than the individual characters of the string.  In this version the string will be updated as soon
-as the data is available from XPlane rather than waiting for a timer to reset.
+Uses a single client instance to both send and receive data as XPlane 'sends the data right back to the IPaddress and port that requested the data'
 
-Uses a single client instance to both send and receive data.
-
-Adds an XPlane discovery function.  Defaults to the first detected instance of XPlane that is sending BECN.  Creates a List of Discovered
-instances of XPlane that can be used to connect to the desired instance.  Use of this multicast function on Apple IOS devices requires
-a 'multicast entitlement' from Apple Developer.
+Adds an XPlane discovery function.  Creates a List of Discovered instances of XPlane that can be used to connect to the desired instance.  Use of this multicast function on Apple IOS devices requires 'multicast entitlement' from Apple Developer.
 
 Example Usage:
 

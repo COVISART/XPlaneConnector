@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Version>2.0.0-beata1</Version>
+    <Authors>Timothy Juntunen</Authors>
+    <!-- Version 1.3 by Max Ferretti https://github.com/MaxFerretti/XPlaneConnector is base version for this project -->
+    <Company>SRPilot</Company>
+    <Description>C# UDP nexus for X-Plane. Find Xplane Instances, Send Commands and read DataRefs</Description>
+    <PackageProjectUrl>https://github.com/darwinIcesurfer/XPlaneNexus</PackageProjectUrl>
+    <PackageId>SRPilot.FlightSim.XPlaneNexus</PackageId>
+    <Product>XPlaneNexus</Product>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <RepositoryUrl>https://github.com/darwinIcesurfer/XPlaneNexus</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>XPlane DataRef</PackageTags>
+    <PackageLicenseFile>license.txt</PackageLicenseFile>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="license.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

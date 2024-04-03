@@ -23,7 +23,8 @@
                 "reveal": "silent"
             },
             "options": {
-                "cwd": "${workspaceFolder}/XPlaneConnector"
+                // "cwd": "${workspaceFolder}/XPlaneConnector"
+                "cwd": "${workspaceFolder}/XPlaneNexus"
             },
         },
         {
@@ -43,7 +44,8 @@
                 "reveal": "silent"
             },
             "options": {
-                "cwd": "${workspaceFolder}/XPlaneConnector"
+                //"cwd": "${workspaceFolder}/XPlaneConnector"
+                "cwd": "${workspaceFolder}/XPlaneNexus"
             },
         }
     ]
