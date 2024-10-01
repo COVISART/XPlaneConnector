@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Command Line Start",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/artifacts/publish/XPlaneCommandLineStart/debug_net8.0_osx-arm64/XPlaneCommandLineStart.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "Publish Debug" 
+        },
+        {
+            "name": "Nuget Package Creation",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/artifacts/publish/XPlaneCommandLineStart/debug_net8.0_osx-arm64/XPlaneCommandLineStart.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "Create Nuget Debug Package" 
+        },
+    ]
+}

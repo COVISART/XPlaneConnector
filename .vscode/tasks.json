@@ -1,0 +1,69 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Publish Debug",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "-c",
+                "Debug",
+                "-r",
+                "osx-arm64",
+                "/property:DefineConstants=DEBUG",
+                "--self-contained"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "options": {
+                // "cwd": "${workspaceFolder}/XPlaneConnector"
+                "cwd": "${workspaceFolder}/XPlaneNexus"
+            },
+        },
+        {
+            "label": "Publish Release",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "-c",
+                "Release",
+                "-r",
+                "osx-arm64",
+                "--self-contained"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent"
+            },
+            "options": {
+                //"cwd": "${workspaceFolder}/XPlaneConnector"
+                "cwd": "${workspaceFolder}/XPlaneNexus"
+            },
+        },
+        {
+            "label": "Create Nuget Debug Package",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "pack",
+                "-c",
+                "Debug",
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/XPlaneNexus"
+            },
+        }
+    ]
+}
